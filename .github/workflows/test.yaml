@@ -3,14 +3,33 @@ on:
   workflow_dispatch: 
   issues:
     types:
-      - edited
+      - closed
+
+permissions:
+  contents: write
+  issues: read
 
 jobs:
   getenvs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - run: env
-      - run: gh issue view 1
+      - run: ./bash.sh > "generated/[${{github.event.issue.number}}]-${{ github.event.issue.title}}.md"
         env:
           GH_TOKEN: ${{ github.token }}
+      - run: ｜
+          git config user.name "github-actions[issue2md]"
+          git config user.email "github-actions[issue2md]@users.noreply.github.com"
+
+          git add ./generated
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "Add generated file for issue #${{github.event.issue.number}}"
+          git push
+          
+
+    
