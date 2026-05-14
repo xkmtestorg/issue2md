@@ -1,16 +1,16 @@
-name: test
+name: generate
 on:
   workflow_dispatch: 
   issues:
-    types:
-      - closed
+    types: [closed]
 
 permissions:
   contents: write
   issues: read
 
 jobs:
-  getenvs:
+  generate:
+    if: contains(github.event.issue.labels.*.name, 'document')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
