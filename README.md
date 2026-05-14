@@ -1,7 +1,3 @@
 # issue2md
 
-# run
-
-```sh
-bash.sh
-```
+参考 [test.yaml](.github/workflows/test.yaml)
