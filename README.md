@@ -1,3 +1,3 @@
 # issue2md
 
-参考 [test.yaml](.github/workflows/test.yaml)
+参考 [generate.yaml](.github/workflows/generate.yaml)
