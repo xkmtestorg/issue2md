@@ -1,0 +1,9 @@
+name: test
+on:
+  workflow_dispatch: 
+
+jobs:
+  getenvs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: env
