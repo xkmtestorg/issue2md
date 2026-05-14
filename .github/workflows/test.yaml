@@ -11,3 +11,5 @@ jobs:
     steps:
       - run: env
       - run: gh issue view 1
+        env:
+          GH_TOKEN: ${{ github.token }}
