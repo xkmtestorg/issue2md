@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   generate:
+    name: Generate markdown for issue \#${{ github.event.issue.number }}
     # 仅作用于带有 documentation 标签的 issue
     if: contains(github.event.issue.labels.*.name, 'documentation')
     runs-on: ubuntu-latest
