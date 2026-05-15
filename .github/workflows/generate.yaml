@@ -1,28 +1,60 @@
-name: generate
+name: issue2md
 on:
-  workflow_dispatch: 
   issues:
-    types: [closed]
+    # 仅在关闭issue时启动
+    types:
+      - closed
 
+# 需要读取 issue 和写入生成的 markdown
 permissions:
   contents: write
   issues: read
 
 jobs:
   generate:
+    # 仅作用于带有 documentation 标签的 issue
     if: contains(github.event.issue.labels.*.name, 'documentation')
     runs-on: ubuntu-latest
     steps:
+      # 克隆仓库进行写入
       - uses: actions/checkout@v6
-      - run: mkdir -p generated && ./bash.sh > "generated/[${{github.event.issue.number}}]-${{ github.event.issue.title}}.md"
+
+      # 确保目录存在
+      - name: Mkdir
+        run: mkdir -p docs
+
+      # 根据 issue 生成代码
+      - name: Generate doc file
         env:
+          # github-cli(gh) 需要 TOKEN
           GH_TOKEN: ${{ github.token }}
-          ISSUE_ID: ${{ github.event.issue.number }}
-      - run: |
+        # 这里的template语法使用go的template语法
+        # 参考：gh help formatting
+        # 基本模版语法参考：https://golang.org/pkg/text/template/
+        # 拓展 function 参考：https://masterminds.github.io/sprig/
+        run: |
+          gh issue view ${{ github.event.issue.number }} \
+            --json 'assignees,author,body,closed,closedAt,closedByPullRequestsReferences,comments,createdAt,id,isPinned,labels,milestone,number,reactionGroups,state,stateReason,title,updatedAt,url' \
+            --template \
+          '# {{ .title }}
+          > {{ .author.login }} create at {{ .createdAt }}
+
+          {{.body}}
+
+          {{ range .comments }}---
+          > {{ .author.login }} comment at {{ .createdAt }}
+
+          {{ .body }}
+          {{ end }}
+          ' > "docs/[${{github.event.issue.number}}]-${{ github.event.issue.title}}.md"
+
+      # 提交更改
+      - name: Commit and push doc
+        run: |
           git config user.name "github-actions[issue2md]"
           git config user.email "github-actions[issue2md]@users.noreply.github.com"
 
-          git add ./generated
+          git add ./docs
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
@@ -31,6 +63,4 @@ jobs:
 
           git commit -m "Add generated doc for issue #${{github.event.issue.number}}"
           git push
-          
 
-    
